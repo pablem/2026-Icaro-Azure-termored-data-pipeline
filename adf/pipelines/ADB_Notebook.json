@@ -1,0 +1,84 @@
+{
+    "name": "pipeline_ADB_Notebook",
+    "properties": {
+        "activities": [
+            {
+                "name": "Notebook bronze",
+                "type": "DatabricksNotebook",
+                "dependsOn": [],
+                "policy": {
+                    "timeout": "0.12:00:00",
+                    "retry": 0,
+                    "retryIntervalInSeconds": 30,
+                    "secureOutput": false,
+                    "secureInput": false
+                },
+                "userProperties": [],
+                "typeProperties": {
+                    "notebookPath": "/Users/estelapalmieri@outlook.com/notebook_01_bronze_termored"
+                },
+                "linkedServiceName": {
+                    "referenceName": "LS_AzureDatabricks1",
+                    "type": "LinkedServiceReference"
+                }
+            },
+            {
+                "name": "Notebook Silver",
+                "type": "DatabricksNotebook",
+                "dependsOn": [
+                    {
+                        "activity": "Notebook bronze",
+                        "dependencyConditions": [
+                            "Succeeded"
+                        ]
+                    }
+                ],
+                "policy": {
+                    "timeout": "0.12:00:00",
+                    "retry": 0,
+                    "retryIntervalInSeconds": 30,
+                    "secureOutput": false,
+                    "secureInput": false
+                },
+                "userProperties": [],
+                "typeProperties": {
+                    "notebookPath": "/Users/estelapalmieri@outlook.com/notebook_02_silver_termored"
+                },
+                "linkedServiceName": {
+                    "referenceName": "LS_AzureDatabricks1",
+                    "type": "LinkedServiceReference"
+                }
+            },
+            {
+                "name": "Notebook Gold",
+                "type": "DatabricksNotebook",
+                "dependsOn": [
+                    {
+                        "activity": "Notebook Silver",
+                        "dependencyConditions": [
+                            "Succeeded"
+                        ]
+                    }
+                ],
+                "policy": {
+                    "timeout": "0.12:00:00",
+                    "retry": 0,
+                    "retryIntervalInSeconds": 30,
+                    "secureOutput": false,
+                    "secureInput": false
+                },
+                "userProperties": [],
+                "typeProperties": {
+                    "notebookPath": "/Users/estelapalmieri@outlook.com/notebook_03_gold_termored"
+                },
+                "linkedServiceName": {
+                    "referenceName": "LS_AzureDatabricks1",
+                    "type": "LinkedServiceReference"
+                }
+            }
+        ],
+        "annotations": [],
+        "lastPublishTime": "2026-08-12T21:05:17Z"
+    },
+    "type": "Microsoft.DataFactory/factories/pipelines"
+}

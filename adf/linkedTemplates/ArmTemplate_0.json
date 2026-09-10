@@ -1,0 +1,1623 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "factoryName": {
+            "type": "string",
+            "metadata": "Nombre de instancia de Data Factory",
+            "defaultValue": "adf-de-integration"
+        },
+        "LS_BlobStorage1_connectionString": {
+            "type": "secureString",
+            "metadata": "Cadena protegida para \"connectionString\"de \"LS_BlobStorage1\""
+        },
+        "LS_SqlDatabase1_password": {
+            "type": "secureString",
+            "metadata": "Cadena protegida para \"password\"de \"LS_SqlDatabase1\""
+        },
+        "LS_AzureDatabricks1_accessToken": {
+            "type": "secureString",
+            "metadata": "Cadena protegida para \"accessToken\"de \"LS_AzureDatabricks1\""
+        },
+        "LS_SqlDatabase1_properties_typeProperties_server": {
+            "type": "string",
+            "defaultValue": "de-azure-integration.database.windows.net"
+        },
+        "LS_SqlDatabase1_properties_typeProperties_database": {
+            "type": "string",
+            "defaultValue": "db-termored"
+        },
+        "LS_SqlDatabase1_properties_typeProperties_userName": {
+            "type": "string",
+            "defaultValue": "CloudSAb68147e7"
+        },
+        "LS_Rest1_properties_typeProperties_url": {
+            "type": "string",
+            "defaultValue": "https://dummyjson.com/"
+        },
+        "LS_AzureDatabricks1_properties_typeProperties_existingClusterId": {
+            "type": "string",
+            "defaultValue": "0812-005524-mzhicfq4"
+        }
+    },
+    "variables": {
+        "factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+    },
+    "resources": [
+        {
+            "name": "[concat(parameters('factoryName'), '/trg_diario')]",
+            "type": "Microsoft.DataFactory/factories/triggers",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "annotations": [],
+                "runtimeState": "Stopped",
+                "pipelines": [],
+                "type": "ScheduleTrigger",
+                "typeProperties": {
+                    "recurrence": {
+                        "frequency": "Day",
+                        "interval": 1,
+                        "startTime": "2026-08-12T20:58:00",
+                        "endTime": "2026-08-19T00:00:00",
+                        "timeZone": "Argentina Standard Time",
+                        "schedule": {
+                            "minutes": [
+                                31
+                            ],
+                            "hours": [
+                                20
+                            ]
+                        }
+                    }
+                }
+            },
+            "dependsOn": []
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/LS_BlobStorage1')]",
+            "type": "Microsoft.DataFactory/factories/linkedServices",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "annotations": [],
+                "type": "AzureBlobStorage",
+                "typeProperties": {
+                    "connectionString": "[parameters('LS_BlobStorage1_connectionString')]"
+                }
+            },
+            "dependsOn": []
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/LS_SqlDatabase1')]",
+            "type": "Microsoft.DataFactory/factories/linkedServices",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "annotations": [],
+                "type": "AzureSqlDatabase",
+                "typeProperties": {
+                    "server": "[parameters('LS_SqlDatabase1_properties_typeProperties_server')]",
+                    "database": "[parameters('LS_SqlDatabase1_properties_typeProperties_database')]",
+                    "encrypt": "mandatory",
+                    "trustServerCertificate": false,
+                    "authenticationType": "SQL",
+                    "userName": "[parameters('LS_SqlDatabase1_properties_typeProperties_userName')]",
+                    "password": {
+                        "type": "SecureString",
+                        "value": "[parameters('LS_SqlDatabase1_password')]"
+                    }
+                }
+            },
+            "dependsOn": []
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/LS_Rest1')]",
+            "type": "Microsoft.DataFactory/factories/linkedServices",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "annotations": [],
+                "type": "RestService",
+                "typeProperties": {
+                    "url": "[parameters('LS_Rest1_properties_typeProperties_url')]",
+                    "enableServerCertificateValidation": true,
+                    "authenticationType": "Anonymous"
+                }
+            },
+            "dependsOn": []
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/LS_AzureDatabricks1')]",
+            "type": "Microsoft.DataFactory/factories/linkedServices",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "annotations": [],
+                "type": "AzureDatabricks",
+                "typeProperties": {
+                    "domain": "https://adb-7405613861403317.17.azuredatabricks.net",
+                    "accessToken": {
+                        "type": "SecureString",
+                        "value": "[parameters('LS_AzureDatabricks1_accessToken')]"
+                    },
+                    "existingClusterId": "[parameters('LS_AzureDatabricks1_properties_typeProperties_existingClusterId')]"
+                }
+            },
+            "dependsOn": []
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/personal_csv')]",
+            "type": "Microsoft.DataFactory/factories/datasets",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "linkedServiceName": {
+                    "referenceName": "LS_BlobStorage1",
+                    "type": "LinkedServiceReference"
+                },
+                "annotations": [],
+                "type": "DelimitedText",
+                "typeProperties": {
+                    "location": {
+                        "type": "AzureBlobStorageLocation",
+                        "fileName": "personal.csv",
+                        "folderPath": "0_raw",
+                        "container": "termored-central-us-dev"
+                    },
+                    "columnDelimiter": ",",
+                    "escapeChar": "\"",
+                    "firstRowAsHeader": true,
+                    "quoteChar": "\""
+                },
+                "schema": [
+                    {
+                        "name": "legajo",
+                        "type": "String"
+                    },
+                    {
+                        "name": "nombre",
+                        "type": "String"
+                    },
+                    {
+                        "name": "banco_id",
+                        "type": "String"
+                    },
+                    {
+                        "name": "turno",
+                        "type": "String"
+                    },
+                    {
+                        "name": "rol",
+                        "type": "String"
+                    },
+                    {
+                        "name": "fecha_alta",
+                        "type": "String"
+                    }
+                ]
+            },
+            "dependsOn": [
+                "[concat(variables('factoryId'), '/linkedServices/LS_BlobStorage1')]"
+            ]
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/sensores_csv')]",
+            "type": "Microsoft.DataFactory/factories/datasets",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "linkedServiceName": {
+                    "referenceName": "LS_BlobStorage1",
+                    "type": "LinkedServiceReference"
+                },
+                "annotations": [],
+                "type": "DelimitedText",
+                "typeProperties": {
+                    "location": {
+                        "type": "AzureBlobStorageLocation",
+                        "fileName": "sensores.csv",
+                        "folderPath": "0_raw",
+                        "container": "termored-central-us-dev"
+                    },
+                    "columnDelimiter": ",",
+                    "escapeChar": "\"",
+                    "firstRowAsHeader": true,
+                    "quoteChar": "\""
+                },
+                "schema": [
+                    {
+                        "name": "sensor_id",
+                        "type": "String"
+                    },
+                    {
+                        "name": "banco_id",
+                        "type": "String"
+                    },
+                    {
+                        "name": "tipo_equipo",
+                        "type": "String"
+                    },
+                    {
+                        "name": "modelo",
+                        "type": "String"
+                    },
+                    {
+                        "name": "rango_min",
+                        "type": "String"
+                    },
+                    {
+                        "name": "rango_max",
+                        "type": "String"
+                    },
+                    {
+                        "name": "fecha_instalacion",
+                        "type": "String"
+                    },
+                    {
+                        "name": "estado",
+                        "type": "String"
+                    }
+                ]
+            },
+            "dependsOn": [
+                "[concat(variables('factoryId'), '/linkedServices/LS_BlobStorage1')]"
+            ]
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/bancos_csv')]",
+            "type": "Microsoft.DataFactory/factories/datasets",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "linkedServiceName": {
+                    "referenceName": "LS_BlobStorage1",
+                    "type": "LinkedServiceReference"
+                },
+                "annotations": [],
+                "type": "DelimitedText",
+                "typeProperties": {
+                    "location": {
+                        "type": "AzureBlobStorageLocation",
+                        "fileName": "bancos.csv",
+                        "folderPath": "0_raw",
+                        "container": "termored-central-us-dev"
+                    },
+                    "columnDelimiter": ",",
+                    "escapeChar": "\"",
+                    "firstRowAsHeader": true,
+                    "quoteChar": "\""
+                },
+                "schema": [
+                    {
+                        "name": "banco_id",
+                        "type": "String"
+                    },
+                    {
+                        "name": "nombre",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ciudad",
+                        "type": "String"
+                    },
+                    {
+                        "name": "provincia",
+                        "type": "String"
+                    },
+                    {
+                        "name": "zona_electrica",
+                        "type": "String"
+                    },
+                    {
+                        "name": "tiene_grupo_electrogeno",
+                        "type": "String"
+                    },
+                    {
+                        "name": "fecha_alta",
+                        "type": "String"
+                    },
+                    {
+                        "name": "activo",
+                        "type": "String"
+                    }
+                ]
+            },
+            "dependsOn": [
+                "[concat(variables('factoryId'), '/linkedServices/LS_BlobStorage1')]"
+            ]
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/lecturas_csv')]",
+            "type": "Microsoft.DataFactory/factories/datasets",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "linkedServiceName": {
+                    "referenceName": "LS_BlobStorage1",
+                    "type": "LinkedServiceReference"
+                },
+                "annotations": [],
+                "type": "DelimitedText",
+                "typeProperties": {
+                    "location": {
+                        "type": "AzureBlobStorageLocation",
+                        "fileName": "lecturas.csv",
+                        "folderPath": "0_raw",
+                        "container": "termored-central-us-dev"
+                    },
+                    "columnDelimiter": ",",
+                    "escapeChar": "\"",
+                    "firstRowAsHeader": true,
+                    "quoteChar": "\""
+                },
+                "schema": [
+                    {
+                        "name": "lectura_id",
+                        "type": "String"
+                    },
+                    {
+                        "name": "sensor_id",
+                        "type": "String"
+                    },
+                    {
+                        "name": "timestamp",
+                        "type": "String"
+                    },
+                    {
+                        "name": "temperatura",
+                        "type": "String"
+                    },
+                    {
+                        "name": "humedad",
+                        "type": "String"
+                    },
+                    {
+                        "name": "bateria_pct",
+                        "type": "String"
+                    },
+                    {
+                        "name": "puerta_abierta",
+                        "type": "String"
+                    }
+                ]
+            },
+            "dependsOn": [
+                "[concat(variables('factoryId'), '/linkedServices/LS_BlobStorage1')]"
+            ]
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/personal_asql')]",
+            "type": "Microsoft.DataFactory/factories/datasets",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "linkedServiceName": {
+                    "referenceName": "LS_SqlDatabase1",
+                    "type": "LinkedServiceReference"
+                },
+                "annotations": [],
+                "type": "AzureSqlTable",
+                "schema": [
+                    {
+                        "name": "legajo",
+                        "type": "nvarchar"
+                    },
+                    {
+                        "name": "nombre",
+                        "type": "nvarchar"
+                    },
+                    {
+                        "name": "banco_id",
+                        "type": "nvarchar"
+                    },
+                    {
+                        "name": "turno",
+                        "type": "nvarchar"
+                    },
+                    {
+                        "name": "rol",
+                        "type": "nvarchar"
+                    },
+                    {
+                        "name": "fecha_alta",
+                        "type": "nvarchar"
+                    }
+                ],
+                "typeProperties": {
+                    "schema": "dbo",
+                    "table": "raw_personal"
+                }
+            },
+            "dependsOn": [
+                "[concat(variables('factoryId'), '/linkedServices/LS_SqlDatabase1')]"
+            ]
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/lecturas_asql')]",
+            "type": "Microsoft.DataFactory/factories/datasets",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "linkedServiceName": {
+                    "referenceName": "LS_SqlDatabase1",
+                    "type": "LinkedServiceReference"
+                },
+                "annotations": [],
+                "type": "AzureSqlTable",
+                "schema": [
+                    {
+                        "name": "lectura_id",
+                        "type": "nvarchar"
+                    },
+                    {
+                        "name": "sensor_id",
+                        "type": "nvarchar"
+                    },
+                    {
+                        "name": "timestamp",
+                        "type": "nvarchar"
+                    },
+                    {
+                        "name": "temperatura",
+                        "type": "nvarchar"
+                    },
+                    {
+                        "name": "humedad",
+                        "type": "nvarchar"
+                    },
+                    {
+                        "name": "bateria_pct",
+                        "type": "nvarchar"
+                    },
+                    {
+                        "name": "puerta_abierta",
+                        "type": "nvarchar"
+                    }
+                ],
+                "typeProperties": {
+                    "schema": "dbo",
+                    "table": "raw_lecturas"
+                }
+            },
+            "dependsOn": [
+                "[concat(variables('factoryId'), '/linkedServices/LS_SqlDatabase1')]"
+            ]
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/bancos_asql')]",
+            "type": "Microsoft.DataFactory/factories/datasets",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "linkedServiceName": {
+                    "referenceName": "LS_SqlDatabase1",
+                    "type": "LinkedServiceReference"
+                },
+                "annotations": [],
+                "type": "AzureSqlTable",
+                "schema": [
+                    {
+                        "name": "banco_id",
+                        "type": "nvarchar"
+                    },
+                    {
+                        "name": "nombre",
+                        "type": "nvarchar"
+                    },
+                    {
+                        "name": "ciudad",
+                        "type": "nvarchar"
+                    },
+                    {
+                        "name": "provincia",
+                        "type": "nvarchar"
+                    },
+                    {
+                        "name": "zona_electrica",
+                        "type": "nvarchar"
+                    },
+                    {
+                        "name": "tiene_grupo_electrogeno",
+                        "type": "nvarchar"
+                    },
+                    {
+                        "name": "fecha_alta",
+                        "type": "nvarchar"
+                    },
+                    {
+                        "name": "activo",
+                        "type": "nvarchar"
+                    }
+                ],
+                "typeProperties": {
+                    "schema": "dbo",
+                    "table": "raw_bancos"
+                }
+            },
+            "dependsOn": [
+                "[concat(variables('factoryId'), '/linkedServices/LS_SqlDatabase1')]"
+            ]
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/cortes_energia_asql')]",
+            "type": "Microsoft.DataFactory/factories/datasets",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "linkedServiceName": {
+                    "referenceName": "LS_SqlDatabase1",
+                    "type": "LinkedServiceReference"
+                },
+                "annotations": [],
+                "type": "AzureSqlTable",
+                "schema": [
+                    {
+                        "name": "corte_id",
+                        "type": "nvarchar"
+                    },
+                    {
+                        "name": "zona_electrica",
+                        "type": "nvarchar"
+                    },
+                    {
+                        "name": "fecha_hora_inicio",
+                        "type": "nvarchar"
+                    },
+                    {
+                        "name": "fecha_hora_fin",
+                        "type": "nvarchar"
+                    },
+                    {
+                        "name": "duracion_min",
+                        "type": "nvarchar"
+                    },
+                    {
+                        "name": "causa",
+                        "type": "nvarchar"
+                    }
+                ],
+                "typeProperties": {
+                    "schema": "dbo",
+                    "table": "raw_cortes_energia"
+                }
+            },
+            "dependsOn": [
+                "[concat(variables('factoryId'), '/linkedServices/LS_SqlDatabase1')]"
+            ]
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/sensores_asql')]",
+            "type": "Microsoft.DataFactory/factories/datasets",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "linkedServiceName": {
+                    "referenceName": "LS_SqlDatabase1",
+                    "type": "LinkedServiceReference"
+                },
+                "annotations": [],
+                "type": "AzureSqlTable",
+                "schema": [
+                    {
+                        "name": "sensor_id",
+                        "type": "nvarchar"
+                    },
+                    {
+                        "name": "banco_id",
+                        "type": "nvarchar"
+                    },
+                    {
+                        "name": "tipo_equipo",
+                        "type": "nvarchar"
+                    },
+                    {
+                        "name": "modelo",
+                        "type": "nvarchar"
+                    },
+                    {
+                        "name": "rango_min",
+                        "type": "nvarchar"
+                    },
+                    {
+                        "name": "rango_max",
+                        "type": "nvarchar"
+                    },
+                    {
+                        "name": "fecha_instalacion",
+                        "type": "nvarchar"
+                    },
+                    {
+                        "name": "estado",
+                        "type": "nvarchar"
+                    }
+                ],
+                "typeProperties": {
+                    "schema": "dbo",
+                    "table": "raw_sensores"
+                }
+            },
+            "dependsOn": [
+                "[concat(variables('factoryId'), '/linkedServices/LS_SqlDatabase1')]"
+            ]
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/cortes_energia_rest')]",
+            "type": "Microsoft.DataFactory/factories/datasets",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "linkedServiceName": {
+                    "referenceName": "LS_Rest1",
+                    "type": "LinkedServiceReference"
+                },
+                "annotations": [],
+                "type": "RestResource",
+                "typeProperties": {
+                    "relativeUrl": "c/c952-4cf3-46c4-ae80"
+                },
+                "schema": []
+            },
+            "dependsOn": [
+                "[concat(variables('factoryId'), '/linkedServices/LS_Rest1')]"
+            ]
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/cortes_energia_raw_json')]",
+            "type": "Microsoft.DataFactory/factories/datasets",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "linkedServiceName": {
+                    "referenceName": "LS_BlobStorage1",
+                    "type": "LinkedServiceReference"
+                },
+                "annotations": [],
+                "type": "Json",
+                "typeProperties": {
+                    "location": {
+                        "type": "AzureBlobStorageLocation",
+                        "fileName": "cortes_energia.json",
+                        "folderPath": "0_raw",
+                        "container": "termored-central-us-dev"
+                    }
+                },
+                "schema": {}
+            },
+            "dependsOn": [
+                "[concat(variables('factoryId'), '/linkedServices/LS_BlobStorage1')]"
+            ]
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/cumplimiento_parquet')]",
+            "type": "Microsoft.DataFactory/factories/datasets",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "linkedServiceName": {
+                    "referenceName": "LS_BlobStorage1",
+                    "type": "LinkedServiceReference"
+                },
+                "annotations": [],
+                "type": "Parquet",
+                "typeProperties": {
+                    "location": {
+                        "type": "AzureBlobStorageLocation",
+                        "fileName": "cumplimiento_cadena_frio.parquet",
+                        "folderPath": "3_gold/cumplimiento_cadena_frio",
+                        "container": "termored-central-us-dev"
+                    },
+                    "compressionCodec": "snappy"
+                },
+                "schema": [
+                    {
+                        "name": "banco_id",
+                        "type": "UTF8"
+                    },
+                    {
+                        "name": "nombre",
+                        "type": "UTF8"
+                    },
+                    {
+                        "name": "ciudad",
+                        "type": "UTF8"
+                    },
+                    {
+                        "name": "provincia",
+                        "type": "UTF8"
+                    },
+                    {
+                        "name": "fecha",
+                        "type": "DATE"
+                    },
+                    {
+                        "name": "total_lecturas",
+                        "type": "INT_64"
+                    },
+                    {
+                        "name": "excursiones",
+                        "type": "INT_64"
+                    },
+                    {
+                        "name": "tasa_cumplimiento_pct",
+                        "type": "DOUBLE"
+                    },
+                    {
+                        "name": "cumple_cadena_frio",
+                        "type": "BOOLEAN"
+                    },
+                    {
+                        "name": "desvio_promedio_c",
+                        "type": "DOUBLE"
+                    },
+                    {
+                        "name": "desvio_maximo_c",
+                        "type": "DOUBLE"
+                    },
+                    {
+                        "name": "excursiones_por_corte",
+                        "type": "INT_64"
+                    },
+                    {
+                        "name": "excursiones_por_puerta",
+                        "type": "INT_64"
+                    },
+                    {
+                        "name": "excursiones_puerta_turno_noche",
+                        "type": "INT_64"
+                    },
+                    {
+                        "name": "excursiones_sin_causa",
+                        "type": "INT_64"
+                    }
+                ]
+            },
+            "dependsOn": [
+                "[concat(variables('factoryId'), '/linkedServices/LS_BlobStorage1')]"
+            ]
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/cumplimiento_asql')]",
+            "type": "Microsoft.DataFactory/factories/datasets",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "linkedServiceName": {
+                    "referenceName": "LS_SqlDatabase1",
+                    "type": "LinkedServiceReference"
+                },
+                "annotations": [],
+                "type": "AzureSqlTable",
+                "schema": [
+                    {
+                        "name": "banco_id",
+                        "type": "varchar"
+                    },
+                    {
+                        "name": "nombre",
+                        "type": "varchar"
+                    },
+                    {
+                        "name": "ciudad",
+                        "type": "varchar"
+                    },
+                    {
+                        "name": "provincia",
+                        "type": "varchar"
+                    },
+                    {
+                        "name": "fecha",
+                        "type": "date"
+                    },
+                    {
+                        "name": "total_lecturas",
+                        "type": "int",
+                        "precision": 10
+                    },
+                    {
+                        "name": "excursiones",
+                        "type": "int",
+                        "precision": 10
+                    },
+                    {
+                        "name": "tasa_cumplimiento_pct",
+                        "type": "decimal",
+                        "precision": 5,
+                        "scale": 2
+                    },
+                    {
+                        "name": "cumple_cadena_frio",
+                        "type": "bit"
+                    },
+                    {
+                        "name": "desvio_promedio_c",
+                        "type": "decimal",
+                        "precision": 5,
+                        "scale": 2
+                    },
+                    {
+                        "name": "desvio_maximo_c",
+                        "type": "decimal",
+                        "precision": 5,
+                        "scale": 2
+                    },
+                    {
+                        "name": "excursiones_por_corte",
+                        "type": "int",
+                        "precision": 10
+                    },
+                    {
+                        "name": "excursiones_por_puerta",
+                        "type": "int",
+                        "precision": 10
+                    },
+                    {
+                        "name": "excursiones_puerta_turno_noche",
+                        "type": "int",
+                        "precision": 10
+                    },
+                    {
+                        "name": "excursiones_sin_causa",
+                        "type": "int",
+                        "precision": 10
+                    }
+                ],
+                "typeProperties": {
+                    "schema": "dbo",
+                    "table": "gold_cumplimiento_cadena_frio"
+                }
+            },
+            "dependsOn": [
+                "[concat(variables('factoryId'), '/linkedServices/LS_SqlDatabase1')]"
+            ]
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/pipeline_ADB_Notebook')]",
+            "type": "Microsoft.DataFactory/factories/pipelines",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "activities": [
+                    {
+                        "name": "Notebook bronze",
+                        "type": "DatabricksNotebook",
+                        "dependsOn": [],
+                        "policy": {
+                            "timeout": "0.12:00:00",
+                            "retry": 0,
+                            "retryIntervalInSeconds": 30,
+                            "secureOutput": false,
+                            "secureInput": false
+                        },
+                        "userProperties": [],
+                        "typeProperties": {
+                            "notebookPath": "/Users/estelapalmieri@outlook.com/notebook_01_bronze_termored"
+                        },
+                        "linkedServiceName": {
+                            "referenceName": "LS_AzureDatabricks1",
+                            "type": "LinkedServiceReference"
+                        }
+                    },
+                    {
+                        "name": "Notebook Silver",
+                        "type": "DatabricksNotebook",
+                        "dependsOn": [
+                            {
+                                "activity": "Notebook bronze",
+                                "dependencyConditions": [
+                                    "Succeeded"
+                                ]
+                            }
+                        ],
+                        "policy": {
+                            "timeout": "0.12:00:00",
+                            "retry": 0,
+                            "retryIntervalInSeconds": 30,
+                            "secureOutput": false,
+                            "secureInput": false
+                        },
+                        "userProperties": [],
+                        "typeProperties": {
+                            "notebookPath": "/Users/estelapalmieri@outlook.com/notebook_02_silver_termored"
+                        },
+                        "linkedServiceName": {
+                            "referenceName": "LS_AzureDatabricks1",
+                            "type": "LinkedServiceReference"
+                        }
+                    },
+                    {
+                        "name": "Notebook Gold",
+                        "type": "DatabricksNotebook",
+                        "dependsOn": [
+                            {
+                                "activity": "Notebook Silver",
+                                "dependencyConditions": [
+                                    "Succeeded"
+                                ]
+                            }
+                        ],
+                        "policy": {
+                            "timeout": "0.12:00:00",
+                            "retry": 0,
+                            "retryIntervalInSeconds": 30,
+                            "secureOutput": false,
+                            "secureInput": false
+                        },
+                        "userProperties": [],
+                        "typeProperties": {
+                            "notebookPath": "/Users/estelapalmieri@outlook.com/notebook_03_gold_termored"
+                        },
+                        "linkedServiceName": {
+                            "referenceName": "LS_AzureDatabricks1",
+                            "type": "LinkedServiceReference"
+                        }
+                    }
+                ],
+                "policy": {
+                    "elapsedTimeMetric": {}
+                },
+                "annotations": [],
+                "lastPublishTime": "2026-08-12T21:05:17Z"
+            },
+            "dependsOn": [
+                "[concat(variables('factoryId'), '/linkedServices/LS_AzureDatabricks1')]"
+            ]
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/pipeline_copy_data')]",
+            "type": "Microsoft.DataFactory/factories/pipelines",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "activities": [
+                    {
+                        "name": "Copy cortes",
+                        "type": "Copy",
+                        "dependsOn": [],
+                        "policy": {
+                            "timeout": "0.12:00:00",
+                            "retry": 0,
+                            "retryIntervalInSeconds": 30,
+                            "secureOutput": false,
+                            "secureInput": false
+                        },
+                        "userProperties": [],
+                        "typeProperties": {
+                            "source": {
+                                "type": "RestSource",
+                                "httpRequestTimeout": "00:01:40",
+                                "requestInterval": "00.00:00:00.010",
+                                "requestMethod": "GET",
+                                "paginationRules": {
+                                    "supportRFC5988": "true"
+                                }
+                            },
+                            "sink": {
+                                "type": "AzureSqlSink",
+                                "preCopyScript": "TRUNCATE TABLE dbo.raw_cortes_energia;",
+                                "writeBehavior": "insert",
+                                "sqlWriterUseTableLock": false,
+                                "disableMetricsCollection": false
+                            },
+                            "enableStaging": false,
+                            "translator": {
+                                "type": "TabularTranslator",
+                                "mappings": [
+                                    {
+                                        "source": {
+                                            "path": "$['corte_id']"
+                                        },
+                                        "sink": {
+                                            "name": "corte_id",
+                                            "type": "String"
+                                        }
+                                    },
+                                    {
+                                        "source": {
+                                            "path": "$['zona_electrica']"
+                                        },
+                                        "sink": {
+                                            "name": "zona_electrica",
+                                            "type": "String"
+                                        }
+                                    },
+                                    {
+                                        "source": {
+                                            "path": "$['fecha_hora_inicio']"
+                                        },
+                                        "sink": {
+                                            "name": "fecha_hora_inicio",
+                                            "type": "String"
+                                        }
+                                    },
+                                    {
+                                        "source": {
+                                            "path": "$['fecha_hora_fin']"
+                                        },
+                                        "sink": {
+                                            "name": "fecha_hora_fin",
+                                            "type": "String"
+                                        }
+                                    },
+                                    {
+                                        "source": {
+                                            "path": "$['duracion_min']"
+                                        },
+                                        "sink": {
+                                            "name": "duracion_min",
+                                            "type": "String"
+                                        }
+                                    },
+                                    {
+                                        "source": {
+                                            "path": "$['causa']"
+                                        },
+                                        "sink": {
+                                            "name": "causa",
+                                            "type": "String"
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        "inputs": [
+                            {
+                                "referenceName": "cortes_energia_rest",
+                                "type": "DatasetReference",
+                                "parameters": {}
+                            }
+                        ],
+                        "outputs": [
+                            {
+                                "referenceName": "cortes_energia_asql",
+                                "type": "DatasetReference",
+                                "parameters": {}
+                            }
+                        ]
+                    },
+                    {
+                        "name": "Copy bancos",
+                        "type": "Copy",
+                        "dependsOn": [],
+                        "policy": {
+                            "timeout": "0.12:00:00",
+                            "retry": 0,
+                            "retryIntervalInSeconds": 30,
+                            "secureOutput": false,
+                            "secureInput": false
+                        },
+                        "userProperties": [],
+                        "typeProperties": {
+                            "source": {
+                                "type": "DelimitedTextSource",
+                                "storeSettings": {
+                                    "type": "AzureBlobStorageReadSettings",
+                                    "recursive": true,
+                                    "enablePartitionDiscovery": false
+                                },
+                                "formatSettings": {
+                                    "type": "DelimitedTextReadSettings"
+                                }
+                            },
+                            "sink": {
+                                "type": "AzureSqlSink",
+                                "preCopyScript": "TRUNCATE TABLE dbo.raw_bancos;",
+                                "writeBehavior": "insert",
+                                "sqlWriterUseTableLock": false,
+                                "disableMetricsCollection": false
+                            },
+                            "enableStaging": false,
+                            "translator": {
+                                "type": "TabularTranslator",
+                                "mappings": [
+                                    {
+                                        "source": {
+                                            "name": "banco_id",
+                                            "type": "String",
+                                            "physicalType": "String"
+                                        },
+                                        "sink": {
+                                            "name": "banco_id",
+                                            "type": "String",
+                                            "physicalType": "nvarchar"
+                                        }
+                                    },
+                                    {
+                                        "source": {
+                                            "name": "nombre",
+                                            "type": "String",
+                                            "physicalType": "String"
+                                        },
+                                        "sink": {
+                                            "name": "nombre",
+                                            "type": "String",
+                                            "physicalType": "nvarchar"
+                                        }
+                                    },
+                                    {
+                                        "source": {
+                                            "name": "ciudad",
+                                            "type": "String",
+                                            "physicalType": "String"
+                                        },
+                                        "sink": {
+                                            "name": "ciudad",
+                                            "type": "String",
+                                            "physicalType": "nvarchar"
+                                        }
+                                    },
+                                    {
+                                        "source": {
+                                            "name": "provincia",
+                                            "type": "String",
+                                            "physicalType": "String"
+                                        },
+                                        "sink": {
+                                            "name": "provincia",
+                                            "type": "String",
+                                            "physicalType": "nvarchar"
+                                        }
+                                    },
+                                    {
+                                        "source": {
+                                            "name": "zona_electrica",
+                                            "type": "String",
+                                            "physicalType": "String"
+                                        },
+                                        "sink": {
+                                            "name": "zona_electrica",
+                                            "type": "String",
+                                            "physicalType": "nvarchar"
+                                        }
+                                    },
+                                    {
+                                        "source": {
+                                            "name": "tiene_grupo_electrogeno",
+                                            "type": "String",
+                                            "physicalType": "String"
+                                        },
+                                        "sink": {
+                                            "name": "tiene_grupo_electrogeno",
+                                            "type": "String",
+                                            "physicalType": "nvarchar"
+                                        }
+                                    },
+                                    {
+                                        "source": {
+                                            "name": "fecha_alta",
+                                            "type": "String",
+                                            "physicalType": "String"
+                                        },
+                                        "sink": {
+                                            "name": "fecha_alta",
+                                            "type": "String",
+                                            "physicalType": "nvarchar"
+                                        }
+                                    },
+                                    {
+                                        "source": {
+                                            "name": "activo",
+                                            "type": "String",
+                                            "physicalType": "String"
+                                        },
+                                        "sink": {
+                                            "name": "activo",
+                                            "type": "String",
+                                            "physicalType": "nvarchar"
+                                        }
+                                    }
+                                ],
+                                "typeConversion": true,
+                                "typeConversionSettings": {
+                                    "allowDataTruncation": true,
+                                    "treatBooleanAsNumber": false
+                                }
+                            }
+                        },
+                        "inputs": [
+                            {
+                                "referenceName": "bancos_csv",
+                                "type": "DatasetReference",
+                                "parameters": {}
+                            }
+                        ],
+                        "outputs": [
+                            {
+                                "referenceName": "bancos_asql",
+                                "type": "DatasetReference",
+                                "parameters": {}
+                            }
+                        ]
+                    },
+                    {
+                        "name": "Copy lecturas",
+                        "type": "Copy",
+                        "dependsOn": [],
+                        "policy": {
+                            "timeout": "0.12:00:00",
+                            "retry": 0,
+                            "retryIntervalInSeconds": 30,
+                            "secureOutput": false,
+                            "secureInput": false
+                        },
+                        "userProperties": [],
+                        "typeProperties": {
+                            "source": {
+                                "type": "DelimitedTextSource",
+                                "storeSettings": {
+                                    "type": "AzureBlobStorageReadSettings",
+                                    "recursive": true,
+                                    "enablePartitionDiscovery": false
+                                },
+                                "formatSettings": {
+                                    "type": "DelimitedTextReadSettings"
+                                }
+                            },
+                            "sink": {
+                                "type": "AzureSqlSink",
+                                "preCopyScript": "TRUNCATE TABLE dbo.raw_lecturas;",
+                                "writeBehavior": "insert",
+                                "sqlWriterUseTableLock": false,
+                                "disableMetricsCollection": false
+                            },
+                            "enableStaging": false,
+                            "translator": {
+                                "type": "TabularTranslator",
+                                "typeConversion": true,
+                                "typeConversionSettings": {
+                                    "allowDataTruncation": true,
+                                    "treatBooleanAsNumber": false
+                                }
+                            }
+                        },
+                        "inputs": [
+                            {
+                                "referenceName": "lecturas_csv",
+                                "type": "DatasetReference",
+                                "parameters": {}
+                            }
+                        ],
+                        "outputs": [
+                            {
+                                "referenceName": "lecturas_asql",
+                                "type": "DatasetReference",
+                                "parameters": {}
+                            }
+                        ]
+                    },
+                    {
+                        "name": "Copy personal",
+                        "type": "Copy",
+                        "dependsOn": [],
+                        "policy": {
+                            "timeout": "0.12:00:00",
+                            "retry": 0,
+                            "retryIntervalInSeconds": 30,
+                            "secureOutput": false,
+                            "secureInput": false
+                        },
+                        "userProperties": [],
+                        "typeProperties": {
+                            "source": {
+                                "type": "DelimitedTextSource",
+                                "storeSettings": {
+                                    "type": "AzureBlobStorageReadSettings",
+                                    "recursive": true,
+                                    "enablePartitionDiscovery": false
+                                },
+                                "formatSettings": {
+                                    "type": "DelimitedTextReadSettings"
+                                }
+                            },
+                            "sink": {
+                                "type": "AzureSqlSink",
+                                "preCopyScript": "TRUNCATE TABLE dbo.raw_personal;",
+                                "writeBehavior": "insert",
+                                "sqlWriterUseTableLock": false,
+                                "disableMetricsCollection": false
+                            },
+                            "enableStaging": false,
+                            "translator": {
+                                "type": "TabularTranslator",
+                                "mappings": [
+                                    {
+                                        "source": {
+                                            "name": "legajo",
+                                            "type": "String",
+                                            "physicalType": "String"
+                                        },
+                                        "sink": {
+                                            "name": "legajo",
+                                            "type": "String",
+                                            "physicalType": "nvarchar"
+                                        }
+                                    },
+                                    {
+                                        "source": {
+                                            "name": "nombre",
+                                            "type": "String",
+                                            "physicalType": "String"
+                                        },
+                                        "sink": {
+                                            "name": "nombre",
+                                            "type": "String",
+                                            "physicalType": "nvarchar"
+                                        }
+                                    },
+                                    {
+                                        "source": {
+                                            "name": "banco_id",
+                                            "type": "String",
+                                            "physicalType": "String"
+                                        },
+                                        "sink": {
+                                            "name": "banco_id",
+                                            "type": "String",
+                                            "physicalType": "nvarchar"
+                                        }
+                                    },
+                                    {
+                                        "source": {
+                                            "name": "turno",
+                                            "type": "String",
+                                            "physicalType": "String"
+                                        },
+                                        "sink": {
+                                            "name": "turno",
+                                            "type": "String",
+                                            "physicalType": "nvarchar"
+                                        }
+                                    },
+                                    {
+                                        "source": {
+                                            "name": "rol",
+                                            "type": "String",
+                                            "physicalType": "String"
+                                        },
+                                        "sink": {
+                                            "name": "rol",
+                                            "type": "String",
+                                            "physicalType": "nvarchar"
+                                        }
+                                    },
+                                    {
+                                        "source": {
+                                            "name": "fecha_alta",
+                                            "type": "String",
+                                            "physicalType": "String"
+                                        },
+                                        "sink": {
+                                            "name": "fecha_alta",
+                                            "type": "String",
+                                            "physicalType": "nvarchar"
+                                        }
+                                    }
+                                ],
+                                "typeConversion": true,
+                                "typeConversionSettings": {
+                                    "allowDataTruncation": true,
+                                    "treatBooleanAsNumber": false
+                                }
+                            }
+                        },
+                        "inputs": [
+                            {
+                                "referenceName": "personal_csv",
+                                "type": "DatasetReference",
+                                "parameters": {}
+                            }
+                        ],
+                        "outputs": [
+                            {
+                                "referenceName": "personal_asql",
+                                "type": "DatasetReference",
+                                "parameters": {}
+                            }
+                        ]
+                    },
+                    {
+                        "name": "Copy sensores",
+                        "type": "Copy",
+                        "dependsOn": [],
+                        "policy": {
+                            "timeout": "0.12:00:00",
+                            "retry": 0,
+                            "retryIntervalInSeconds": 30,
+                            "secureOutput": false,
+                            "secureInput": false
+                        },
+                        "userProperties": [],
+                        "typeProperties": {
+                            "source": {
+                                "type": "DelimitedTextSource",
+                                "storeSettings": {
+                                    "type": "AzureBlobStorageReadSettings",
+                                    "recursive": true,
+                                    "enablePartitionDiscovery": false
+                                },
+                                "formatSettings": {
+                                    "type": "DelimitedTextReadSettings"
+                                }
+                            },
+                            "sink": {
+                                "type": "AzureSqlSink",
+                                "preCopyScript": "TRUNCATE TABLE dbo.raw_sensores;",
+                                "writeBehavior": "insert",
+                                "sqlWriterUseTableLock": false,
+                                "disableMetricsCollection": false
+                            },
+                            "enableStaging": false,
+                            "translator": {
+                                "type": "TabularTranslator",
+                                "mappings": [
+                                    {
+                                        "source": {
+                                            "name": "sensor_id",
+                                            "type": "String",
+                                            "physicalType": "String"
+                                        },
+                                        "sink": {
+                                            "name": "sensor_id",
+                                            "type": "String",
+                                            "physicalType": "nvarchar"
+                                        }
+                                    },
+                                    {
+                                        "source": {
+                                            "name": "banco_id",
+                                            "type": "String",
+                                            "physicalType": "String"
+                                        },
+                                        "sink": {
+                                            "name": "banco_id",
+                                            "type": "String",
+                                            "physicalType": "nvarchar"
+                                        }
+                                    },
+                                    {
+                                        "source": {
+                                            "name": "tipo_equipo",
+                                            "type": "String",
+                                            "physicalType": "String"
+                                        },
+                                        "sink": {
+                                            "name": "tipo_equipo",
+                                            "type": "String",
+                                            "physicalType": "nvarchar"
+                                        }
+                                    },
+                                    {
+                                        "source": {
+                                            "name": "modelo",
+                                            "type": "String",
+                                            "physicalType": "String"
+                                        },
+                                        "sink": {
+                                            "name": "modelo",
+                                            "type": "String",
+                                            "physicalType": "nvarchar"
+                                        }
+                                    },
+                                    {
+                                        "source": {
+                                            "name": "rango_min",
+                                            "type": "String",
+                                            "physicalType": "String"
+                                        },
+                                        "sink": {
+                                            "name": "rango_min",
+                                            "type": "String",
+                                            "physicalType": "nvarchar"
+                                        }
+                                    },
+                                    {
+                                        "source": {
+                                            "name": "rango_max",
+                                            "type": "String",
+                                            "physicalType": "String"
+                                        },
+                                        "sink": {
+                                            "name": "rango_max",
+                                            "type": "String",
+                                            "physicalType": "nvarchar"
+                                        }
+                                    },
+                                    {
+                                        "source": {
+                                            "name": "fecha_instalacion",
+                                            "type": "String",
+                                            "physicalType": "String"
+                                        },
+                                        "sink": {
+                                            "name": "fecha_instalacion",
+                                            "type": "String",
+                                            "physicalType": "nvarchar"
+                                        }
+                                    },
+                                    {
+                                        "source": {
+                                            "name": "estado",
+                                            "type": "String",
+                                            "physicalType": "String"
+                                        },
+                                        "sink": {
+                                            "name": "estado",
+                                            "type": "String",
+                                            "physicalType": "nvarchar"
+                                        }
+                                    }
+                                ],
+                                "typeConversion": true,
+                                "typeConversionSettings": {
+                                    "allowDataTruncation": true,
+                                    "treatBooleanAsNumber": false
+                                }
+                            }
+                        },
+                        "inputs": [
+                            {
+                                "referenceName": "sensores_csv",
+                                "type": "DatasetReference",
+                                "parameters": {}
+                            }
+                        ],
+                        "outputs": [
+                            {
+                                "referenceName": "sensores_asql",
+                                "type": "DatasetReference",
+                                "parameters": {}
+                            }
+                        ]
+                    },
+                    {
+                        "name": "Copy cortes a json",
+                        "type": "Copy",
+                        "dependsOn": [],
+                        "policy": {
+                            "timeout": "0.12:00:00",
+                            "retry": 0,
+                            "retryIntervalInSeconds": 30,
+                            "secureOutput": false,
+                            "secureInput": false
+                        },
+                        "userProperties": [],
+                        "typeProperties": {
+                            "source": {
+                                "type": "RestSource",
+                                "httpRequestTimeout": "00:01:40",
+                                "requestInterval": "00.00:00:00.010",
+                                "requestMethod": "GET",
+                                "paginationRules": {
+                                    "supportRFC5988": "true"
+                                }
+                            },
+                            "sink": {
+                                "type": "JsonSink",
+                                "storeSettings": {
+                                    "type": "AzureBlobStorageWriteSettings"
+                                },
+                                "formatSettings": {
+                                    "type": "JsonWriteSettings",
+                                    "filePattern": "setOfObjects"
+                                }
+                            },
+                            "enableStaging": false
+                        },
+                        "inputs": [
+                            {
+                                "referenceName": "cortes_energia_rest",
+                                "type": "DatasetReference",
+                                "parameters": {}
+                            }
+                        ],
+                        "outputs": [
+                            {
+                                "referenceName": "cortes_energia_raw_json",
+                                "type": "DatasetReference",
+                                "parameters": {}
+                            }
+                        ]
+                    }
+                ],
+                "policy": {
+                    "elapsedTimeMetric": {}
+                },
+                "annotations": [],
+                "lastPublishTime": "2026-08-12T14:36:56Z"
+            },
+            "dependsOn": [
+                "[concat(variables('factoryId'), '/datasets/cortes_energia_rest')]",
+                "[concat(variables('factoryId'), '/datasets/cortes_energia_asql')]",
+                "[concat(variables('factoryId'), '/datasets/bancos_csv')]",
+                "[concat(variables('factoryId'), '/datasets/bancos_asql')]",
+                "[concat(variables('factoryId'), '/datasets/lecturas_csv')]",
+                "[concat(variables('factoryId'), '/datasets/lecturas_asql')]",
+                "[concat(variables('factoryId'), '/datasets/personal_csv')]",
+                "[concat(variables('factoryId'), '/datasets/personal_asql')]",
+                "[concat(variables('factoryId'), '/datasets/sensores_csv')]",
+                "[concat(variables('factoryId'), '/datasets/sensores_asql')]",
+                "[concat(variables('factoryId'), '/datasets/cortes_energia_raw_json')]"
+            ]
+        }
+    ]
+}

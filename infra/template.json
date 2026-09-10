@@ -1,0 +1,794 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "vulnerabilityAssessments_Default_storageContainerPath": {
+            "type": "SecureString"
+        },
+        "servers_de_azure_integration_name": {
+            "defaultValue": "de-azure-integration",
+            "type": "String"
+        },
+        "workspaces_TrabajoFinal_name": {
+            "defaultValue": "TrabajoFinal",
+            "type": "String"
+        },
+        "storageAccounts_destorageintegration_name": {
+            "defaultValue": "destorageintegration",
+            "type": "String"
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "type": "Microsoft.Databricks/workspaces",
+            "apiVersion": "2026-01-01",
+            "name": "[parameters('workspaces_TrabajoFinal_name')]",
+            "location": "centralus",
+            "sku": {
+                "name": "trial"
+            },
+            "properties": {
+                "computeMode": "Hybrid",
+                "defaultCatalog": {
+                    "initialType": "UnityCatalog"
+                },
+                "managedResourceGroupId": "[concat('/subscriptions/5cddd773-fd17-42c8-b10e-4a33ee16503a/resourceGroups/databricks-rg-', parameters('workspaces_TrabajoFinal_name'), '-fa7lp6n7lqzg6')]",
+                "parameters": {
+                    "enableNoPublicIp": {
+                        "type": "Bool",
+                        "value": true
+                    },
+                    "prepareEncryption": {
+                        "type": "Bool",
+                        "value": false
+                    },
+                    "requireInfrastructureEncryption": {
+                        "type": "Bool",
+                        "value": false
+                    },
+                    "storageAccountName": {
+                        "type": "String",
+                        "value": "dbstoragep4ybt4en3pqk6"
+                    },
+                    "storageAccountSkuName": {
+                        "type": "String",
+                        "value": "Standard_ZRS"
+                    }
+                },
+                "authorizations": [
+                    {
+                        "principalId": "9a74af6f-d153-4348-988a-e2672920bee9",
+                        "roleDefinitionId": "8e3af657-a8ff-443c-a75c-2fe8c4bcb635"
+                    }
+                ],
+                "createdBy": {},
+                "updatedBy": {}
+            }
+        },
+        {
+            "type": "Microsoft.Sql/servers",
+            "apiVersion": "2025-02-01-preview",
+            "name": "[parameters('servers_de_azure_integration_name')]",
+            "location": "centralus",
+            "kind": "v12.0",
+            "properties": {
+                "administratorLogin": "CloudSAb68147e7",
+                "version": "12.0",
+                "minimalTlsVersion": "1.2",
+                "publicNetworkAccess": "Enabled",
+                "administrators": {
+                    "administratorType": "ActiveDirectory",
+                    "principalType": "User",
+                    "login": "estelapalmieri@outlook.com",
+                    "sid": "d06d328e-b106-404b-bfda-1306b8737067",
+                    "tenantId": "437c38c6-c489-491b-848d-123bc3b9236b",
+                    "azureADOnlyAuthentication": false
+                },
+                "restrictOutboundNetworkAccess": "Disabled",
+                "retentionDays": -1
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts",
+            "apiVersion": "2026-04-01",
+            "name": "[parameters('storageAccounts_destorageintegration_name')]",
+            "location": "centralus",
+            "sku": {
+                "name": "Standard_RAGRS",
+                "tier": "Standard"
+            },
+            "kind": "StorageV2",
+            "properties": {
+                "dualStackEndpointPreference": {
+                    "publishIpv6Endpoint": false
+                },
+                "dnsEndpointType": "Standard",
+                "defaultToOAuthAuthentication": false,
+                "publicNetworkAccess": "Enabled",
+                "allowCrossTenantReplication": false,
+                "isSftpEnabled": false,
+                "minimumTlsVersion": "TLS1_2",
+                "allowBlobPublicAccess": false,
+                "allowSharedKeyAccess": true,
+                "isHnsEnabled": true,
+                "networkAcls": {
+                    "ipv6Rules": [],
+                    "bypass": "AzureServices",
+                    "virtualNetworkRules": [],
+                    "ipRules": [],
+                    "defaultAction": "Allow"
+                },
+                "supportsHttpsTrafficOnly": true,
+                "encryption": {
+                    "requireInfrastructureEncryption": false,
+                    "services": {
+                        "file": {
+                            "keyType": "Account",
+                            "enabled": true
+                        },
+                        "blob": {
+                            "keyType": "Account",
+                            "enabled": true
+                        }
+                    },
+                    "keySource": "Microsoft.Storage"
+                },
+                "accessTier": "Hot"
+            }
+        },
+        {
+            "type": "Microsoft.Sql/servers/administrators",
+            "apiVersion": "2025-02-01-preview",
+            "name": "[concat(parameters('servers_de_azure_integration_name'), '/ActiveDirectory')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers', parameters('servers_de_azure_integration_name'))]"
+            ],
+            "properties": {
+                "administratorType": "ActiveDirectory",
+                "login": "estelapalmieri@outlook.com",
+                "sid": "d06d328e-b106-404b-bfda-1306b8737067",
+                "tenantId": "437c38c6-c489-491b-848d-123bc3b9236b"
+            }
+        },
+        {
+            "type": "Microsoft.Sql/servers/advancedThreatProtectionSettings",
+            "apiVersion": "2025-02-01-preview",
+            "name": "[concat(parameters('servers_de_azure_integration_name'), '/Default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers', parameters('servers_de_azure_integration_name'))]"
+            ],
+            "properties": {
+                "state": "Disabled"
+            }
+        },
+        {
+            "type": "Microsoft.Sql/servers/advisors",
+            "apiVersion": "2014-04-01",
+            "name": "[concat(parameters('servers_de_azure_integration_name'), '/CreateIndex')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers', parameters('servers_de_azure_integration_name'))]"
+            ],
+            "properties": {
+                "autoExecuteValue": "Disabled"
+            }
+        },
+        {
+            "type": "Microsoft.Sql/servers/advisors",
+            "apiVersion": "2014-04-01",
+            "name": "[concat(parameters('servers_de_azure_integration_name'), '/DbParameterization')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers', parameters('servers_de_azure_integration_name'))]"
+            ],
+            "properties": {
+                "autoExecuteValue": "Disabled"
+            }
+        },
+        {
+            "type": "Microsoft.Sql/servers/advisors",
+            "apiVersion": "2014-04-01",
+            "name": "[concat(parameters('servers_de_azure_integration_name'), '/DefragmentIndex')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers', parameters('servers_de_azure_integration_name'))]"
+            ],
+            "properties": {
+                "autoExecuteValue": "Disabled"
+            }
+        },
+        {
+            "type": "Microsoft.Sql/servers/advisors",
+            "apiVersion": "2014-04-01",
+            "name": "[concat(parameters('servers_de_azure_integration_name'), '/DropIndex')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers', parameters('servers_de_azure_integration_name'))]"
+            ],
+            "properties": {
+                "autoExecuteValue": "Disabled"
+            }
+        },
+        {
+            "type": "Microsoft.Sql/servers/advisors",
+            "apiVersion": "2014-04-01",
+            "name": "[concat(parameters('servers_de_azure_integration_name'), '/ForceLastGoodPlan')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers', parameters('servers_de_azure_integration_name'))]"
+            ],
+            "properties": {
+                "autoExecuteValue": "Enabled"
+            }
+        },
+        {
+            "type": "Microsoft.Sql/servers/auditingPolicies",
+            "apiVersion": "2014-04-01",
+            "name": "[concat(parameters('servers_de_azure_integration_name'), '/Default')]",
+            "location": "Central US",
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers', parameters('servers_de_azure_integration_name'))]"
+            ],
+            "properties": {
+                "auditingState": "Disabled"
+            }
+        },
+        {
+            "type": "Microsoft.Sql/servers/auditingSettings",
+            "apiVersion": "2025-02-01-preview",
+            "name": "[concat(parameters('servers_de_azure_integration_name'), '/Default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers', parameters('servers_de_azure_integration_name'))]"
+            ],
+            "properties": {
+                "retentionDays": 0,
+                "auditActionsAndGroups": [],
+                "isStorageSecondaryKeyInUse": false,
+                "isAzureMonitorTargetEnabled": false,
+                "isManagedIdentityInUse": false,
+                "state": "Disabled",
+                "storageAccountSubscriptionId": "00000000-0000-0000-0000-000000000000"
+            }
+        },
+        {
+            "type": "Microsoft.Sql/servers/azureADOnlyAuthentications",
+            "apiVersion": "2025-02-01-preview",
+            "name": "[concat(parameters('servers_de_azure_integration_name'), '/Default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers', parameters('servers_de_azure_integration_name'))]"
+            ],
+            "properties": {
+                "azureADOnlyAuthentication": false
+            }
+        },
+        {
+            "type": "Microsoft.Sql/servers/connectionPolicies",
+            "apiVersion": "2025-02-01-preview",
+            "name": "[concat(parameters('servers_de_azure_integration_name'), '/default')]",
+            "location": "centralus",
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers', parameters('servers_de_azure_integration_name'))]"
+            ],
+            "properties": {
+                "connectionType": "Default"
+            }
+        },
+        {
+            "type": "Microsoft.Sql/servers/databases",
+            "apiVersion": "2025-02-01-preview",
+            "name": "[concat(parameters('servers_de_azure_integration_name'), '/db-termored')]",
+            "location": "centralus",
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers', parameters('servers_de_azure_integration_name'))]"
+            ],
+            "sku": {
+                "name": "GP_S_Gen5_2",
+                "tier": "GeneralPurpose",
+                "family": "Gen5",
+                "capacity": 2
+            },
+            "kind": "v12.0,user,vcore,serverless,freelimit",
+            "properties": {
+                "collation": "SQL_Latin1_General_CP1_CI_AS",
+                "maxSizeBytes": 34359738368,
+                "catalogCollation": "SQL_Latin1_General_CP1_CI_AS",
+                "zoneRedundant": false,
+                "readScale": "Disabled",
+                "autoPauseDelay": 60,
+                "requestedBackupStorageRedundancy": "Local",
+                "minCapacity": 0.5,
+                "maintenanceConfigurationId": "/subscriptions/5cddd773-fd17-42c8-b10e-4a33ee16503a/providers/Microsoft.Maintenance/publicMaintenanceConfigurations/SQL_Default",
+                "isLedgerOn": false,
+                "useFreeLimit": true,
+                "freeLimitExhaustionBehavior": "AutoPause",
+                "availabilityZone": "NoPreference"
+            }
+        },
+        {
+            "type": "Microsoft.Sql/servers/databases/advancedThreatProtectionSettings",
+            "apiVersion": "2025-02-01-preview",
+            "name": "[concat(parameters('servers_de_azure_integration_name'), '/master/Default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers', parameters('servers_de_azure_integration_name'))]"
+            ],
+            "properties": {
+                "state": "Disabled"
+            }
+        },
+        {
+            "type": "Microsoft.Sql/servers/databases/auditingPolicies",
+            "apiVersion": "2014-04-01",
+            "name": "[concat(parameters('servers_de_azure_integration_name'), '/master/Default')]",
+            "location": "Central US",
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers', parameters('servers_de_azure_integration_name'))]"
+            ],
+            "properties": {
+                "auditingState": "Disabled"
+            }
+        },
+        {
+            "type": "Microsoft.Sql/servers/databases/auditingSettings",
+            "apiVersion": "2025-02-01-preview",
+            "name": "[concat(parameters('servers_de_azure_integration_name'), '/master/Default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers', parameters('servers_de_azure_integration_name'))]"
+            ],
+            "properties": {
+                "retentionDays": 0,
+                "isAzureMonitorTargetEnabled": false,
+                "state": "Disabled",
+                "storageAccountSubscriptionId": "00000000-0000-0000-0000-000000000000"
+            }
+        },
+        {
+            "type": "Microsoft.Sql/servers/databases/extendedAuditingSettings",
+            "apiVersion": "2025-02-01-preview",
+            "name": "[concat(parameters('servers_de_azure_integration_name'), '/master/Default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers', parameters('servers_de_azure_integration_name'))]"
+            ],
+            "properties": {
+                "retentionDays": 0,
+                "isAzureMonitorTargetEnabled": false,
+                "state": "Disabled",
+                "storageAccountSubscriptionId": "00000000-0000-0000-0000-000000000000"
+            }
+        },
+        {
+            "type": "Microsoft.Sql/servers/databases/geoBackupPolicies",
+            "apiVersion": "2025-02-01-preview",
+            "name": "[concat(parameters('servers_de_azure_integration_name'), '/master/Default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers', parameters('servers_de_azure_integration_name'))]"
+            ],
+            "properties": {
+                "state": "Disabled"
+            }
+        },
+        {
+            "type": "Microsoft.Sql/servers/databases/ledgerDigestUploads",
+            "apiVersion": "2025-02-01-preview",
+            "name": "[concat(parameters('servers_de_azure_integration_name'), '/master/Current')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers', parameters('servers_de_azure_integration_name'))]"
+            ],
+            "properties": {}
+        },
+        {
+            "type": "Microsoft.Sql/servers/databases/securityAlertPolicies",
+            "apiVersion": "2025-02-01-preview",
+            "name": "[concat(parameters('servers_de_azure_integration_name'), '/master/Default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers', parameters('servers_de_azure_integration_name'))]"
+            ],
+            "properties": {
+                "state": "Disabled",
+                "disabledAlerts": [
+                    ""
+                ],
+                "emailAddresses": [
+                    ""
+                ],
+                "emailAccountAdmins": false,
+                "retentionDays": 0
+            }
+        },
+        {
+            "type": "Microsoft.Sql/servers/databases/transparentDataEncryption",
+            "apiVersion": "2025-02-01-preview",
+            "name": "[concat(parameters('servers_de_azure_integration_name'), '/master/Current')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers', parameters('servers_de_azure_integration_name'))]"
+            ],
+            "properties": {
+                "state": "Disabled"
+            }
+        },
+        {
+            "type": "Microsoft.Sql/servers/databases/vulnerabilityAssessments",
+            "apiVersion": "2025-02-01-preview",
+            "name": "[concat(parameters('servers_de_azure_integration_name'), '/master/Default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers', parameters('servers_de_azure_integration_name'))]"
+            ],
+            "properties": {
+                "recurringScans": {
+                    "isEnabled": false,
+                    "emailSubscriptionAdmins": true
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Sql/servers/devOpsAuditingSettings",
+            "apiVersion": "2025-02-01-preview",
+            "name": "[concat(parameters('servers_de_azure_integration_name'), '/Default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers', parameters('servers_de_azure_integration_name'))]"
+            ],
+            "properties": {
+                "isAzureMonitorTargetEnabled": false,
+                "isManagedIdentityInUse": false,
+                "state": "Disabled",
+                "storageAccountSubscriptionId": "00000000-0000-0000-0000-000000000000"
+            }
+        },
+        {
+            "type": "Microsoft.Sql/servers/encryptionProtector",
+            "apiVersion": "2025-02-01-preview",
+            "name": "[concat(parameters('servers_de_azure_integration_name'), '/current')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers', parameters('servers_de_azure_integration_name'))]"
+            ],
+            "kind": "servicemanaged",
+            "properties": {
+                "serverKeyName": "ServiceManaged",
+                "serverKeyType": "ServiceManaged",
+                "autoRotationEnabled": false
+            }
+        },
+        {
+            "type": "Microsoft.Sql/servers/extendedAuditingSettings",
+            "apiVersion": "2025-02-01-preview",
+            "name": "[concat(parameters('servers_de_azure_integration_name'), '/Default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers', parameters('servers_de_azure_integration_name'))]"
+            ],
+            "properties": {
+                "retentionDays": 0,
+                "auditActionsAndGroups": [],
+                "isStorageSecondaryKeyInUse": false,
+                "isAzureMonitorTargetEnabled": false,
+                "isManagedIdentityInUse": false,
+                "state": "Disabled",
+                "storageAccountSubscriptionId": "00000000-0000-0000-0000-000000000000"
+            }
+        },
+        {
+            "type": "Microsoft.Sql/servers/firewallRules",
+            "apiVersion": "2025-02-01-preview",
+            "name": "[concat(parameters('servers_de_azure_integration_name'), '/AllowAllWindowsAzureIps')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers', parameters('servers_de_azure_integration_name'))]"
+            ],
+            "properties": {
+                "startIpAddress": "0.0.0.0",
+                "endIpAddress": "0.0.0.0"
+            }
+        },
+        {
+            "type": "Microsoft.Sql/servers/firewallRules",
+            "apiVersion": "2025-02-01-preview",
+            "name": "[concat(parameters('servers_de_azure_integration_name'), '/QueryEditorClientIPAddress_1786397399774')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers', parameters('servers_de_azure_integration_name'))]"
+            ],
+            "properties": {
+                "startIpAddress": "181.177.197.247",
+                "endIpAddress": "181.177.197.247"
+            }
+        },
+        {
+            "type": "Microsoft.Sql/servers/keys",
+            "apiVersion": "2025-02-01-preview",
+            "name": "[concat(parameters('servers_de_azure_integration_name'), '/ServiceManaged')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers', parameters('servers_de_azure_integration_name'))]"
+            ],
+            "kind": "servicemanaged",
+            "properties": {
+                "serverKeyType": "ServiceManaged"
+            }
+        },
+        {
+            "type": "Microsoft.Sql/servers/securityAlertPolicies",
+            "apiVersion": "2025-02-01-preview",
+            "name": "[concat(parameters('servers_de_azure_integration_name'), '/Default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers', parameters('servers_de_azure_integration_name'))]"
+            ],
+            "properties": {
+                "state": "Disabled",
+                "disabledAlerts": [
+                    ""
+                ],
+                "emailAddresses": [
+                    ""
+                ],
+                "emailAccountAdmins": false,
+                "retentionDays": 0
+            }
+        },
+        {
+            "type": "Microsoft.Sql/servers/sqlVulnerabilityAssessments",
+            "apiVersion": "2025-02-01-preview",
+            "name": "[concat(parameters('servers_de_azure_integration_name'), '/Default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers', parameters('servers_de_azure_integration_name'))]"
+            ],
+            "properties": {
+                "state": "Disabled"
+            }
+        },
+        {
+            "type": "Microsoft.Sql/servers/vulnerabilityAssessments",
+            "apiVersion": "2025-02-01-preview",
+            "name": "[concat(parameters('servers_de_azure_integration_name'), '/Default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers', parameters('servers_de_azure_integration_name'))]"
+            ],
+            "properties": {
+                "recurringScans": {
+                    "isEnabled": false,
+                    "emailSubscriptionAdmins": true
+                },
+                "storageContainerPath": "[parameters('vulnerabilityAssessments_Default_storageContainerPath')]"
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/blobServices",
+            "apiVersion": "2026-04-01",
+            "name": "[concat(parameters('storageAccounts_destorageintegration_name'), '/default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_destorageintegration_name'))]"
+            ],
+            "sku": {
+                "name": "Standard_RAGRS",
+                "tier": "Standard"
+            },
+            "properties": {
+                "staticWebsite": {
+                    "enabled": false
+                },
+                "cors": {
+                    "corsRules": []
+                },
+                "deleteRetentionPolicy": {
+                    "allowPermanentDelete": false,
+                    "enabled": false
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/fileServices",
+            "apiVersion": "2026-04-01",
+            "name": "[concat(parameters('storageAccounts_destorageintegration_name'), '/default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_destorageintegration_name'))]"
+            ],
+            "sku": {
+                "name": "Standard_RAGRS",
+                "tier": "Standard"
+            },
+            "properties": {
+                "protocolSettings": {
+                    "smb": {
+                        "encryptionInTransit": {
+                            "required": true
+                        }
+                    }
+                },
+                "cors": {
+                    "corsRules": []
+                },
+                "shareDeleteRetentionPolicy": {
+                    "enabled": false,
+                    "days": 0
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/queueServices",
+            "apiVersion": "2026-04-01",
+            "name": "[concat(parameters('storageAccounts_destorageintegration_name'), '/default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_destorageintegration_name'))]"
+            ],
+            "properties": {
+                "cors": {
+                    "corsRules": []
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/tableServices",
+            "apiVersion": "2026-04-01",
+            "name": "[concat(parameters('storageAccounts_destorageintegration_name'), '/default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_destorageintegration_name'))]"
+            ],
+            "properties": {
+                "cors": {
+                    "corsRules": []
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Sql/servers/databases/advancedThreatProtectionSettings",
+            "apiVersion": "2025-02-01-preview",
+            "name": "[concat(parameters('servers_de_azure_integration_name'), '/db-termored/Default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers/databases', parameters('servers_de_azure_integration_name'), 'db-termored')]",
+                "[resourceId('Microsoft.Sql/servers', parameters('servers_de_azure_integration_name'))]"
+            ],
+            "properties": {
+                "state": "Disabled"
+            }
+        },
+        {
+            "type": "Microsoft.Sql/servers/databases/auditingPolicies",
+            "apiVersion": "2014-04-01",
+            "name": "[concat(parameters('servers_de_azure_integration_name'), '/db-termored/Default')]",
+            "location": "Central US",
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers/databases', parameters('servers_de_azure_integration_name'), 'db-termored')]",
+                "[resourceId('Microsoft.Sql/servers', parameters('servers_de_azure_integration_name'))]"
+            ],
+            "properties": {
+                "auditingState": "Disabled"
+            }
+        },
+        {
+            "type": "Microsoft.Sql/servers/databases/auditingSettings",
+            "apiVersion": "2025-02-01-preview",
+            "name": "[concat(parameters('servers_de_azure_integration_name'), '/db-termored/Default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers/databases', parameters('servers_de_azure_integration_name'), 'db-termored')]",
+                "[resourceId('Microsoft.Sql/servers', parameters('servers_de_azure_integration_name'))]"
+            ],
+            "properties": {
+                "retentionDays": 0,
+                "isAzureMonitorTargetEnabled": false,
+                "state": "Disabled",
+                "storageAccountSubscriptionId": "00000000-0000-0000-0000-000000000000"
+            }
+        },
+        {
+            "type": "Microsoft.Sql/servers/databases/backupLongTermRetentionPolicies",
+            "apiVersion": "2025-02-01-preview",
+            "name": "[concat(parameters('servers_de_azure_integration_name'), '/db-termored/default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers/databases', parameters('servers_de_azure_integration_name'), 'db-termored')]",
+                "[resourceId('Microsoft.Sql/servers', parameters('servers_de_azure_integration_name'))]"
+            ],
+            "properties": {
+                "timeBasedImmutability": "Disabled",
+                "weeklyRetention": "PT0S",
+                "monthlyRetention": "PT0S",
+                "yearlyRetention": "PT0S",
+                "weekOfYear": 0
+            }
+        },
+        {
+            "type": "Microsoft.Sql/servers/databases/backupShortTermRetentionPolicies",
+            "apiVersion": "2025-02-01-preview",
+            "name": "[concat(parameters('servers_de_azure_integration_name'), '/db-termored/default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers/databases', parameters('servers_de_azure_integration_name'), 'db-termored')]",
+                "[resourceId('Microsoft.Sql/servers', parameters('servers_de_azure_integration_name'))]"
+            ],
+            "properties": {
+                "retentionDays": 7,
+                "diffBackupIntervalInHours": 12
+            }
+        },
+        {
+            "type": "Microsoft.Sql/servers/databases/extendedAuditingSettings",
+            "apiVersion": "2025-02-01-preview",
+            "name": "[concat(parameters('servers_de_azure_integration_name'), '/db-termored/Default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers/databases', parameters('servers_de_azure_integration_name'), 'db-termored')]",
+                "[resourceId('Microsoft.Sql/servers', parameters('servers_de_azure_integration_name'))]"
+            ],
+            "properties": {
+                "retentionDays": 0,
+                "isAzureMonitorTargetEnabled": false,
+                "state": "Disabled",
+                "storageAccountSubscriptionId": "00000000-0000-0000-0000-000000000000"
+            }
+        },
+        {
+            "type": "Microsoft.Sql/servers/databases/geoBackupPolicies",
+            "apiVersion": "2025-02-01-preview",
+            "name": "[concat(parameters('servers_de_azure_integration_name'), '/db-termored/Default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers/databases', parameters('servers_de_azure_integration_name'), 'db-termored')]",
+                "[resourceId('Microsoft.Sql/servers', parameters('servers_de_azure_integration_name'))]"
+            ],
+            "properties": {
+                "state": "Disabled"
+            }
+        },
+        {
+            "type": "Microsoft.Sql/servers/databases/ledgerDigestUploads",
+            "apiVersion": "2025-02-01-preview",
+            "name": "[concat(parameters('servers_de_azure_integration_name'), '/db-termored/Current')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers/databases', parameters('servers_de_azure_integration_name'), 'db-termored')]",
+                "[resourceId('Microsoft.Sql/servers', parameters('servers_de_azure_integration_name'))]"
+            ],
+            "properties": {}
+        },
+        {
+            "type": "Microsoft.Sql/servers/databases/securityAlertPolicies",
+            "apiVersion": "2025-02-01-preview",
+            "name": "[concat(parameters('servers_de_azure_integration_name'), '/db-termored/Default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers/databases', parameters('servers_de_azure_integration_name'), 'db-termored')]",
+                "[resourceId('Microsoft.Sql/servers', parameters('servers_de_azure_integration_name'))]"
+            ],
+            "properties": {
+                "state": "Disabled",
+                "disabledAlerts": [
+                    ""
+                ],
+                "emailAddresses": [
+                    ""
+                ],
+                "emailAccountAdmins": false,
+                "retentionDays": 0
+            }
+        },
+        {
+            "type": "Microsoft.Sql/servers/databases/transparentDataEncryption",
+            "apiVersion": "2025-02-01-preview",
+            "name": "[concat(parameters('servers_de_azure_integration_name'), '/db-termored/Current')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers/databases', parameters('servers_de_azure_integration_name'), 'db-termored')]",
+                "[resourceId('Microsoft.Sql/servers', parameters('servers_de_azure_integration_name'))]"
+            ],
+            "properties": {
+                "state": "Enabled",
+                "scanState": "Complete"
+            }
+        },
+        {
+            "type": "Microsoft.Sql/servers/databases/vulnerabilityAssessments",
+            "apiVersion": "2025-02-01-preview",
+            "name": "[concat(parameters('servers_de_azure_integration_name'), '/db-termored/Default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers/databases', parameters('servers_de_azure_integration_name'), 'db-termored')]",
+                "[resourceId('Microsoft.Sql/servers', parameters('servers_de_azure_integration_name'))]"
+            ],
+            "properties": {
+                "recurringScans": {
+                    "isEnabled": false,
+                    "emailSubscriptionAdmins": true
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+            "apiVersion": "2026-04-01",
+            "name": "[concat(parameters('storageAccounts_destorageintegration_name'), '/default/termored-central-us-dev')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts/blobServices', parameters('storageAccounts_destorageintegration_name'), 'default')]",
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_destorageintegration_name'))]"
+            ],
+            "properties": {
+                "immutableStorageWithVersioning": {
+                    "enabled": false
+                },
+                "defaultEncryptionScope": "$account-encryption-key",
+                "denyEncryptionScopeOverride": false,
+                "publicAccess": "None"
+            }
+        }
+    ]
+}

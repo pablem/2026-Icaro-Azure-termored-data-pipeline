@@ -1,0 +1,252 @@
+{
+    "name": "pipeline_publicacion_gold",
+    "properties": {
+        "activities": [
+            {
+                "name": "Copy data gold1",
+                "type": "Copy",
+                "dependsOn": [],
+                "policy": {
+                    "timeout": "0.12:00:00",
+                    "retry": 0,
+                    "retryIntervalInSeconds": 30,
+                    "secureOutput": false,
+                    "secureInput": false
+                },
+                "userProperties": [],
+                "typeProperties": {
+                    "source": {
+                        "type": "ParquetSource",
+                        "storeSettings": {
+                            "type": "AzureBlobStorageReadSettings",
+                            "recursive": true,
+                            "enablePartitionDiscovery": false
+                        },
+                        "formatSettings": {
+                            "type": "ParquetReadSettings"
+                        }
+                    },
+                    "sink": {
+                        "type": "AzureSqlSink",
+                        "preCopyScript": "TRUNCATE TABLE dbo.gold_cumplimiento_cadena_frio;",
+                        "writeBehavior": "insert",
+                        "sqlWriterUseTableLock": false,
+                        "disableMetricsCollection": false
+                    },
+                    "enableStaging": false,
+                    "translator": {
+                        "type": "TabularTranslator",
+                        "mappings": [
+                            {
+                                "source": {
+                                    "name": "banco_id",
+                                    "type": "String",
+                                    "physicalType": "UTF8"
+                                },
+                                "sink": {
+                                    "name": "banco_id",
+                                    "type": "String",
+                                    "physicalType": "varchar"
+                                }
+                            },
+                            {
+                                "source": {
+                                    "name": "nombre",
+                                    "type": "String",
+                                    "physicalType": "UTF8"
+                                },
+                                "sink": {
+                                    "name": "nombre",
+                                    "type": "String",
+                                    "physicalType": "varchar"
+                                }
+                            },
+                            {
+                                "source": {
+                                    "name": "ciudad",
+                                    "type": "String",
+                                    "physicalType": "UTF8"
+                                },
+                                "sink": {
+                                    "name": "ciudad",
+                                    "type": "String",
+                                    "physicalType": "varchar"
+                                }
+                            },
+                            {
+                                "source": {
+                                    "name": "provincia",
+                                    "type": "String",
+                                    "physicalType": "UTF8"
+                                },
+                                "sink": {
+                                    "name": "provincia",
+                                    "type": "String",
+                                    "physicalType": "varchar"
+                                }
+                            },
+                            {
+                                "source": {
+                                    "name": "fecha",
+                                    "type": "DateTime",
+                                    "physicalType": "DATE"
+                                },
+                                "sink": {
+                                    "name": "fecha",
+                                    "type": "Date",
+                                    "physicalType": "date"
+                                }
+                            },
+                            {
+                                "source": {
+                                    "name": "total_lecturas",
+                                    "type": "Int64",
+                                    "physicalType": "INT_64"
+                                },
+                                "sink": {
+                                    "name": "total_lecturas",
+                                    "type": "Int32",
+                                    "physicalType": "int"
+                                }
+                            },
+                            {
+                                "source": {
+                                    "name": "excursiones",
+                                    "type": "Int64",
+                                    "physicalType": "INT_64"
+                                },
+                                "sink": {
+                                    "name": "excursiones",
+                                    "type": "Int32",
+                                    "physicalType": "int"
+                                }
+                            },
+                            {
+                                "source": {
+                                    "name": "tasa_cumplimiento_pct",
+                                    "type": "Double",
+                                    "physicalType": "DOUBLE"
+                                },
+                                "sink": {
+                                    "name": "tasa_cumplimiento_pct",
+                                    "type": "Decimal",
+                                    "physicalType": "decimal",
+                                    "scale": 2,
+                                    "precision": 5
+                                }
+                            },
+                            {
+                                "source": {
+                                    "name": "cumple_cadena_frio",
+                                    "type": "Boolean",
+                                    "physicalType": "BOOLEAN"
+                                },
+                                "sink": {
+                                    "name": "cumple_cadena_frio",
+                                    "type": "Boolean",
+                                    "physicalType": "bit"
+                                }
+                            },
+                            {
+                                "source": {
+                                    "name": "desvio_promedio_c",
+                                    "type": "Double",
+                                    "physicalType": "DOUBLE"
+                                },
+                                "sink": {
+                                    "name": "desvio_promedio_c",
+                                    "type": "Decimal",
+                                    "physicalType": "decimal",
+                                    "scale": 2,
+                                    "precision": 5
+                                }
+                            },
+                            {
+                                "source": {
+                                    "name": "desvio_maximo_c",
+                                    "type": "Double",
+                                    "physicalType": "DOUBLE"
+                                },
+                                "sink": {
+                                    "name": "desvio_maximo_c",
+                                    "type": "Decimal",
+                                    "physicalType": "decimal",
+                                    "scale": 2,
+                                    "precision": 5
+                                }
+                            },
+                            {
+                                "source": {
+                                    "name": "excursiones_por_corte",
+                                    "type": "Int64",
+                                    "physicalType": "INT_64"
+                                },
+                                "sink": {
+                                    "name": "excursiones_por_corte",
+                                    "type": "Int32",
+                                    "physicalType": "int"
+                                }
+                            },
+                            {
+                                "source": {
+                                    "name": "excursiones_por_puerta",
+                                    "type": "Int64",
+                                    "physicalType": "INT_64"
+                                },
+                                "sink": {
+                                    "name": "excursiones_por_puerta",
+                                    "type": "Int32",
+                                    "physicalType": "int"
+                                }
+                            },
+                            {
+                                "source": {
+                                    "name": "excursiones_puerta_turno_noche",
+                                    "type": "Int64",
+                                    "physicalType": "INT_64"
+                                },
+                                "sink": {
+                                    "name": "excursiones_puerta_turno_noche",
+                                    "type": "Int32",
+                                    "physicalType": "int"
+                                }
+                            },
+                            {
+                                "source": {
+                                    "name": "excursiones_sin_causa",
+                                    "type": "Int64",
+                                    "physicalType": "INT_64"
+                                },
+                                "sink": {
+                                    "name": "excursiones_sin_causa",
+                                    "type": "Int32",
+                                    "physicalType": "int"
+                                }
+                            }
+                        ],
+                        "typeConversion": true,
+                        "typeConversionSettings": {
+                            "allowDataTruncation": true,
+                            "treatBooleanAsNumber": false
+                        }
+                    }
+                },
+                "inputs": [
+                    {
+                        "referenceName": "cumplimiento_parquet",
+                        "type": "DatasetReference"
+                    }
+                ],
+                "outputs": [
+                    {
+                        "referenceName": "cumplimiento_asql",
+                        "type": "DatasetReference"
+                    }
+                ]
+            }
+        ],
+        "annotations": [],
+        "lastPublishTime": "2026-08-12T19:20:57Z"
+    },
+    "type": "Microsoft.DataFactory/factories/pipelines"
+}

@@ -1,0 +1,118 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "factoryName": {
+            "type": "string",
+            "metadata": "Nombre de instancia de Data Factory",
+            "defaultValue": "adf-de-integration"
+        },
+        "LS_BlobStorage1_connectionString": {
+            "type": "secureString",
+            "metadata": "Cadena protegida para \"connectionString\"de \"LS_BlobStorage1\""
+        },
+        "LS_SqlDatabase1_password": {
+            "type": "secureString",
+            "metadata": "Cadena protegida para \"password\"de \"LS_SqlDatabase1\""
+        },
+        "LS_AzureDatabricks1_accessToken": {
+            "type": "secureString",
+            "metadata": "Cadena protegida para \"accessToken\"de \"LS_AzureDatabricks1\""
+        },
+        "LS_SqlDatabase1_properties_typeProperties_server": {
+            "type": "string",
+            "defaultValue": "de-azure-integration.database.windows.net"
+        },
+        "LS_SqlDatabase1_properties_typeProperties_database": {
+            "type": "string",
+            "defaultValue": "db-termored"
+        },
+        "LS_SqlDatabase1_properties_typeProperties_userName": {
+            "type": "string",
+            "defaultValue": "CloudSAb68147e7"
+        },
+        "LS_Rest1_properties_typeProperties_url": {
+            "type": "string",
+            "defaultValue": "https://dummyjson.com/"
+        },
+        "LS_AzureDatabricks1_properties_typeProperties_existingClusterId": {
+            "type": "string",
+            "defaultValue": "0812-005524-mzhicfq4"
+        },
+        "containerUri": {
+            "type": "string",
+            "metadata": "URI de la cuenta de almacenamiento que contiene las plantillas de ARM vinculadas."
+        },
+        "containerSasToken": {
+            "type": "string",
+            "metadata": "Token de SAS para la cuenta de almacenamiento que contiene las plantillas de ARM vinculadas"
+        }
+    },
+    "variables": {
+        "factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+    },
+    "resources": [
+        {
+            "name": "adf-de-integration_ArmTemplate_0",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2024-03-01",
+            "properties": {
+                "mode": "incremental",
+                "templateLink": {
+                    "uri": "[concat(parameters('containerUri'), '/ArmTemplate_0.json', parameters('containerSasToken'))]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "factoryName": {
+                        "value": "[parameters('factoryName')]"
+                    },
+                    "LS_BlobStorage1_connectionString": {
+                        "value": "[parameters('LS_BlobStorage1_connectionString')]"
+                    },
+                    "LS_SqlDatabase1_password": {
+                        "value": "[parameters('LS_SqlDatabase1_password')]"
+                    },
+                    "LS_AzureDatabricks1_accessToken": {
+                        "value": "[parameters('LS_AzureDatabricks1_accessToken')]"
+                    },
+                    "LS_SqlDatabase1_properties_typeProperties_server": {
+                        "value": "[parameters('LS_SqlDatabase1_properties_typeProperties_server')]"
+                    },
+                    "LS_SqlDatabase1_properties_typeProperties_database": {
+                        "value": "[parameters('LS_SqlDatabase1_properties_typeProperties_database')]"
+                    },
+                    "LS_SqlDatabase1_properties_typeProperties_userName": {
+                        "value": "[parameters('LS_SqlDatabase1_properties_typeProperties_userName')]"
+                    },
+                    "LS_Rest1_properties_typeProperties_url": {
+                        "value": "[parameters('LS_Rest1_properties_typeProperties_url')]"
+                    },
+                    "LS_AzureDatabricks1_properties_typeProperties_existingClusterId": {
+                        "value": "[parameters('LS_AzureDatabricks1_properties_typeProperties_existingClusterId')]"
+                    }
+                }
+            },
+            "dependsOn": []
+        },
+        {
+            "name": "adf-de-integration_ArmTemplate_1",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2024-03-01",
+            "properties": {
+                "mode": "incremental",
+                "templateLink": {
+                    "uri": "[concat(parameters('containerUri'), '/ArmTemplate_1.json', parameters('containerSasToken'))]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "factoryName": {
+                        "value": "[parameters('factoryName')]"
+                    }
+                }
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Resources/deployments', 'adf-de-integration_ArmTemplate_0')]"
+            ]
+        }
+    ]
+}

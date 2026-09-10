@@ -1,0 +1,39 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "factoryName": {
+            "value": "adf-de-integration"
+        },
+        "LS_BlobStorage1_connectionString": {
+            "value": ""
+        },
+        "LS_SqlDatabase1_password": {
+            "value": ""
+        },
+        "LS_AzureDatabricks1_accessToken": {
+            "value": ""
+        },
+        "LS_SqlDatabase1_properties_typeProperties_server": {
+            "value": "de-azure-integration.database.windows.net"
+        },
+        "LS_SqlDatabase1_properties_typeProperties_database": {
+            "value": "db-termored"
+        },
+        "LS_SqlDatabase1_properties_typeProperties_userName": {
+            "value": "CloudSAb68147e7"
+        },
+        "LS_Rest1_properties_typeProperties_url": {
+            "value": "https://dummyjson.com/"
+        },
+        "LS_AzureDatabricks1_properties_typeProperties_existingClusterId": {
+            "value": "0812-005524-mzhicfq4"
+        },
+        "containerUri": {
+            "value": ""
+        },
+        "containerSasToken": {
+            "value": ""
+        }
+    }
+}
